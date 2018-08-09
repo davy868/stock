@@ -1,9 +1,9 @@
-import numpy as np
-h=np.zeros(3,dtype=np.float32)
+import tushare as ts
 
-print h
-print("Ok")
+stockcode=ts.get_today_all()["code"]
 
-print "OK2"
-print "OK3"
-print "OK4"
+for code in stockcode:
+    df=ts.get_k_data(code)
+    print df
+
+print "OK"

@@ -52,7 +52,7 @@ def get_sorted_axle(inputfile):
 	return stock_number[1:]
 
 
-def get_base_G(inputfile,g1plus,g1mins,g2):
+def get_base_G(inputfile):
 ##############################################
 #获取输入目录下一个月内每一只股票的上午开盘价、上午最高价、上午最低价、下午开盘价、第二天收盘价
 #结果为矩阵base_G(所有股票数*当月交易日数×20)，并保存为base_G.csv
@@ -61,15 +61,13 @@ def get_base_G(inputfile,g1plus,g1mins,g2):
 
 
 	temp_stock_number = []
-	with open("/root/neural-networks-and-deep-learning/csv5minute/stock_number.csv", "r") as csvfile:
+	with open("/root/PycharmProjects/untitled/stock_number.csv", "r") as csvfile:
 		reader = csv.reader(csvfile)
 		for item in reader:
 			temp_stock_number=item
 	stock_number = np.zeros(len(temp_stock_number), float)
 	for i in range(len(temp_stock_number)):
 		stock_number[i] = float(temp_stock_number[i])
-
-
 
 	filedirs = os.listdir(inputfile)
 	temp_filedir_order = np.zeros(len(filedirs), dtype=np.int)
@@ -93,8 +91,8 @@ def get_base_G(inputfile,g1plus,g1mins,g2):
 #########################
 
 	tasks=[(inputfile,filedirs_sorted[0:int(len(filedirs)*0.25)],stock_number,all_stock_data1),(inputfile,filedirs_sorted[int(len(filedirs)*0.25):int(len(filedirs)*0.25)*2],stock_number,all_stock_data2),(inputfile,filedirs_sorted[int(len(filedirs)*0.25)*2:int(len(filedirs)*0.25)*3],stock_number,all_stock_data3),(inputfile,filedirs_sorted[int(len(filedirs)*0.25)*3:len(filedirs_sorted)],stock_number,all_stock_data4)]
-	# pool = Pool(processes=4)
-	# pool.map(temp_pool,tasks)
+	pool = Pool(processes=4)
+	pool.map(temp_pool,tasks)
 
 	# for i in range(0, len(filedirs_sorted)):
 	# 	filedirs_sorted[i] = inputfile + filedirs_sorted[i]
@@ -108,42 +106,43 @@ def get_base_G(inputfile,g1plus,g1mins,g2):
 	# plt.figure(2)
 	# plt.plot(all_stock_data[8*length_of_stock_number+54][:])
 	# plt.show()
-	temp_all_stock_number=[]
-	with open("/root/neural-networks-and-deep-learning/csv5minute/all_stock_0102_minute_data.csv", "r") as csvfile:
-		reader = csv.reader(csvfile)
-		for item in reader:
-			temp_all_stock_number.append(item)
-	for i in range(len(temp_all_stock_number[:])):
-		all_stock_data[i] = map(np.float32,temp_all_stock_number[i])
+	# temp_all_stock_number=[]
+	# with open("/root/PycharmProjects/untitled/all_stock_0102_minute_data.csv", "r") as csvfile:
+	# 	reader = csv.reader(csvfile)
+	# 	for item in reader:
+	# 		temp_all_stock_number.append(item)
+	# for i in range(len(temp_all_stock_number[:])):
+	# 	all_stock_data[i] = map(np.float32,temp_all_stock_number[i])
+	#
+	#
+	# temp_all_stock_number = []
+	# with open("/root/PycharmProjects/untitled/all_stock_0313_minute_data.csv", "r") as csvfile:
+	# 	reader = csv.reader(csvfile)
+	# 	for item in reader:
+	# 		temp_all_stock_number.append(item)
+	# for i in range(len(temp_all_stock_number)):
+	# 	all_stock_data[i+len(temp_all_stock_number)] = map(np.float32,temp_all_stock_number[i])
+	#
+	#
+	# temp_all_stock_number = []
+	# with open("/root/PycharmProjects/untitled/all_stock_0529_minute_data.csv", "r") as csvfile:
+	# 	reader = csv.reader(csvfile)
+	# 	for item in reader:
+	# 		temp_all_stock_number.append(item)
+	# for i in range(len(temp_all_stock_number)):
+	# 	all_stock_data[i+len(temp_all_stock_number)*2] = map(np.float32,temp_all_stock_number[i])
+	#
+	# temp_all_stock_number=[]
+	# with open("/root/PycharmProjects/untitled/all_stock_1021_minute_data.csv", "r") as csvfile:
+	# 	reader = csv.reader(csvfile)
+	# 	for item in reader:
+	# 		temp_all_stock_number.append(item)
+	# for i in range(len(temp_all_stock_number)):
+	# 	all_stock_data[i+len(temp_all_stock_number)*3] = map(np.float32,temp_all_stock_number[i])
+	#
+	# del temp_all_stock_number
+	# gc.collect()
 
-
-	temp_all_stock_number = []
-	with open("/root/neural-networks-and-deep-learning/csv5minute/all_stock_0313_minute_data.csv", "r") as csvfile:
-		reader = csv.reader(csvfile)
-		for item in reader:
-			temp_all_stock_number.append(item)
-	for i in range(len(temp_all_stock_number)):
-		all_stock_data[i+len(temp_all_stock_number)] = map(np.float32,temp_all_stock_number[i])
-
-
-	temp_all_stock_number = []
-	with open("/root/neural-networks-and-deep-learning/csv5minute/all_stock_0529_minute_data.csv", "r") as csvfile:
-		reader = csv.reader(csvfile)
-		for item in reader:
-			temp_all_stock_number.append(item)
-	for i in range(len(temp_all_stock_number)):
-		all_stock_data[i+len(temp_all_stock_number)*2] = map(np.float32,temp_all_stock_number[i])
-
-	temp_all_stock_number=[]
-	with open("/root/neural-networks-and-deep-learning/csv5minute/all_stock_1021_minute_data.csv", "r") as csvfile:
-		reader = csv.reader(csvfile)
-		for item in reader:
-			temp_all_stock_number.append(item)
-	for i in range(len(temp_all_stock_number)):
-		all_stock_data[i+len(temp_all_stock_number)*3] = map(np.float32,temp_all_stock_number[i])
-
-	del temp_all_stock_number
-	gc.collect()
 	#
 	#
 	# flucation_stock_data=[]
@@ -179,28 +178,28 @@ def get_base_G(inputfile,g1plus,g1mins,g2):
 	for i in range(length_of_stock_number,len(base_G)):
 		base_G[i][0] = all_stock_data[i-length_of_stock_number][-1] #昨天收盘价
 		base_G[i][1] = all_stock_data[i][0] #上午开盘价
-		base_G[i][2] = np.max(all_stock_data[i][0:40])  # 上午最高价
-		base_G[i][3] = np.min(all_stock_data[i][0:40])  # 上午最低价
-		base_G[i][4] = np.average(all_stock_data[i][40:50])  # 下单价
+		# base_G[i][2] = np.max(all_stock_data[i][0:40])  # 上午最高价
+		base_G[i][3] = np.average(all_stock_data[i+length_of_stock_number][1:6])  # 第二天卖出价
+		base_G[i][4] = np.average(all_stock_data[i][6:11])  # 本次下单价
 
-		if 1.005*(np.average(all_stock_data[i + length_of_stock_number][0:5])) < np.average(all_stock_data[i + length_of_stock_number][5:10]) :
-			base_G[i][5]= np.average(all_stock_data[i + length_of_stock_number][239:])
-		else:
-			base_G[i][5]=np.average(all_stock_data[i + length_of_stock_number][10:20])
+		# if 1.005*(np.average(all_stock_data[i + length_of_stock_number][0:5])) < np.average(all_stock_data[i + length_of_stock_number][5:10]) :
+		# 	base_G[i][5]= np.average(all_stock_data[i + length_of_stock_number][239:])
+		# else:
+		# 	base_G[i][5]=np.average(all_stock_data[i + length_of_stock_number][10:20])
 
-		base_G[i][6]=(base_G[i][2]+0.00001)/(base_G[i][0]+0.00001)  #g1+
-		base_G[i][7]=(base_G[i][3]+0.00001)/(base_G[i][0]+0.00001) #g1-
-		base_G[i][8]=(base_G[i][5]+0.00001)/(base_G[i][4]+0.00001) #g2
+		base_G[i][6]=(base_G[i][1]+0.00001)/(base_G[i][0]+0.00001)  #g1+
+		base_G[i][7]=(base_G[i][3]+0.00001)/(base_G[i][4]+0.00001) #g2
+		# base_G[i][8]=(base_G[i][5]+0.00001)/(base_G[i][4]+0.00001) #g2
 
-		if base_G[i][6]>g1plus:
-			base_G[i][10]=1
-		if base_G[i][7]<g1mins:
-			base_G[i][11]=1
-		if base_G[i][8]>g2:
-			base_G[i][12]=1
+		# if base_G[i][6]>g1plus:
+		# 	base_G[i][10]=1
+		# if base_G[i][7]<g1mins:
+		# 	base_G[i][11]=1
+		# if base_G[i][8]>g2:
+		# 	base_G[i][12]=1
 
 
-	with open("/root/neural-networks-and-deep-learning/csv5minute/base_G.csv", "w") as csvfile:
+	with open("/root/PycharmProjects/untitled/base_G.csv", "w") as csvfile:
 		writer = csv.writer(csvfile)
 		for i in range(len(base_G)):
 			writer.writerow(base_G[i][:])
@@ -212,7 +211,7 @@ def get_all_stock_data(inputfile,filedirs_sorted,stock_number,all_stock_data):
 		filedirs_sorted[i] = inputfile + filedirs_sorted[i]
 		day_data_in_one_array = get_day_data(filedirs_sorted[i], stock_number)#读取某一天的数据，股票代码为矩阵行号
 		all_stock_data[i * length_of_stock_number:(i + 1) * length_of_stock_number][:] = day_data_in_one_array#将某天的数据放入大矩阵all_stock_data中
-	with open("/root/neural-networks-and-deep-learning/csv5minute/all_stock_"+filedirs_sorted[0][-20:-4]+".csv", "w") as csvfile:
+	with open("/root/PycharmProjects/untitled/all_stock_"+filedirs_sorted[0][-20:-4]+".csv", "w") as csvfile:
 		writer = csv.writer(csvfile)
 		for i in range(len(all_stock_data)):
 			writer.writerow(all_stock_data[i][:])

@@ -3,7 +3,7 @@ import os
 import csv
 import numpy as np
 from multiprocessing import Pool
-from dtw import dtw
+# from dtw import dtw
 import time
 #from csv5read import get_file_name
 """

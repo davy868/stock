@@ -21,34 +21,44 @@ import time
 import pandas as pd
 import re
 
+# day1='2013-01-01'
+# day2='2015-12-01'
+# x1=time.mktime(time.strptime(day1,'%Y-%m-%d'))
+# x2=time.mktime(time.strptime(day2,'%Y-%m-%d'))
+# day=int(x2-x1)/(24*3600)
+
 def get_sql_data(g1plus,g1mins,g2):
 	stock_number = []
-	with open("/root/neural-networks-and-deep-learning/csv5minute/stock_number.csv", "r") as csvfile:
+	with open("/root/PycharmProjects/untitled/stock_number.csv", "r") as csvfile:
 		reader = csv.reader(csvfile)
 		for item in reader:
 			stock_number = item
 
-	conn=pymysql.connect(host='127.0.0.1',port=3306,user='root',passwd='Luo0046sq',db='mysql',charset='utf8',cursorclass=pymysql.cursors.DictCursor)
+	conn=pymysql.connect(host='127.0.0.1',port=3306,user='root',passwd='Luo0046!sq',db='mysql',charset='utf8',cursorclass=pymysql.cursors.DictCursor)
 	cur=conn.cursor()
 	cur.execute("USE stock_5min_from20151201")
-	cur.execute("select date from stock_5min_from20151201.601398 WHERE  date  REGEXP '09:35$';")
+	cur.execute("select data from stock_5min_from20151201.601398 WHERE  data  REGEXP '09:35$';")
 	ret= cur.fetchall()
 
 	date_from_sql=[]
 
-	for i in range(267,610):
+	for i in range(610):
 		date_from_sql.append(str(ret[i].values()[0][0:10]))
 
-	stock_data_from_sql=np.zeros((len(stock_number)*343,20),dtype=np.float32)
+	stock_data_from_sql=np.zeros((len(stock_number)*610,20),dtype=np.float32)
+	base_info_stock_gg=np.zeros((len(stock_number),610*3),dtype=np.float32)
 
 	print time.time()
 	for i in range(len(stock_number)):
 		print i
 		if i !=688 and i!=830 and i!=832 and i!=597 :
 			one_stock_from_2015=[]
-			command="select date,open,close,high,low from stock_5min_from20151201."+stock_number[i]+";"
+			command="select data,open,close,high,low from stock_5min_from20151201."+stock_number[i]+";"
 			cur.execute(command)
 			ret=cur.fetchall()
+			if ret[1].keys()[0]=='high' and ret[1].keys()[4]=='close':
+				print "right order"
+
 			for t in range(len(ret)):
 				one_stock_from_2015.append(ret[t].values())
 
@@ -56,24 +66,24 @@ def get_sql_data(g1plus,g1mins,g2):
 			n=0
 			d=0
 			for d in range(len(date_from_sql)):
-				while one_stock_from_2015[m][0][0:10]!=date_from_sql[d]:
+				while one_stock_from_2015[m][2][0:10]!=date_from_sql[d]:
 					m +=1
 					if m==len(one_stock_from_2015)-1:
 						break
-				if one_stock_from_2015[m][0][0:10]==date_from_sql[d]:
+				if one_stock_from_2015[m][2][0:10]==date_from_sql[d]:
 					break
 				m=0
 			n=m
-			while one_stock_from_2015[m][0][0:10] == date_from_sql[d]:
+			while one_stock_from_2015[m][2][0:10] == date_from_sql[d]:
 				m += 1
 
 			# print stock_number[i]," ",n," ",m," ",d
 
-			for j in range(d+1,len(date_from_sql)-1):
+			for j in range(d+1,int(len(one_stock_from_2015)/(48)-15)):
 				n=m
 				if m== len(one_stock_from_2015):
 					break
-				while one_stock_from_2015[m][0][0:10]==date_from_sql[j]:
+				while one_stock_from_2015[m][2][0:10]==date_from_sql[j]:
 					if m-n>48:
 						m=n
 						break
@@ -85,30 +95,29 @@ def get_sql_data(g1plus,g1mins,g2):
 				if m-n>9 and m-n <= 48:
 					one_day_data=np.zeros((m-n,4),dtype=np.float32)
 					for t in range(m-n):
-						one_day_data[t]=one_stock_from_2015[n+t][1:5]
-					stock_data_from_sql[i + j * len(stock_number)][0] = one_stock_from_2015[n-1][1]  # 前一天收盘价
-					stock_data_from_sql[i + j * len(stock_number)][1] = one_day_data[0][2]  # 上午开盘价
-					stock_data_from_sql[i + j * len(stock_number)][2] = max(one_day_data[0:8,1]) #40分钟内最大值
-					stock_data_from_sql[i + j * len(stock_number)][3] = min(one_day_data[0:8,3]) #40分钟内最小值
-					stock_data_from_sql[i + j * len(stock_number)][4] = one_day_data[8:10].mean()#买入价
-					if 1.005*one_day_data[0].mean()<one_day_data[1].mean():
-						stock_data_from_sql[i + j * len(stock_number)][5] = one_day_data[-1].mean()  #卖出价
-					else:
-						stock_data_from_sql[i + j * len(stock_number)][5] = (one_day_data[2].mean()+one_day_data[3].mean())*0.5 #卖出价
-					stock_data_from_sql[i + j * len(stock_number)][6] = (stock_data_from_sql[i + j * len(stock_number)][2] + 0.00001) / (stock_data_from_sql[i + j * len(stock_number)][0] + 0.00001)  # g1+
-					stock_data_from_sql[i + j * len(stock_number)][7] = (stock_data_from_sql[i + j * len(stock_number)][3] + 0.00001) / (stock_data_from_sql[i + j * len(stock_number)][0] + 0.00001)  # g1-
-					stock_data_from_sql[i + j * len(stock_number)][8] = (stock_data_from_sql[i + j * len(stock_number)][5] + 0.00001) / (stock_data_from_sql[i + j * len(stock_number)][4] + 0.00001)  # g2
-					if stock_data_from_sql[i + j * len(stock_number)][6] > g1plus:
-						stock_data_from_sql[i + j * len(stock_number)][10] = 1
-					if stock_data_from_sql[i + j * len(stock_number)][7] < g1mins:
-						stock_data_from_sql[i + j * len(stock_number)][11] = 1
-					if stock_data_from_sql[i + j * len(stock_number)][8] > g2:
-						stock_data_from_sql[i + j * len(stock_number)][12] = 1
+						one_day_data[t][0:2]=one_stock_from_2015[n+t][0:2]
+						one_day_data[t][2:4] = one_stock_from_2015[n + t][3:5]
 
-	with open("/root/neural-networks-and-deep-learning/csv5minute/stock_data_from_sql_base_G_07192000.csv", "w") as csvfile:
+					stock_data_from_sql[i + j * len(stock_number)][0] = one_stock_from_2015[n-1][4]  # 前一天收盘价
+					stock_data_from_sql[i + j * len(stock_number)][1] = one_day_data[0][1]  # 上午开盘价
+					stock_data_from_sql[i + j * len(stock_number)][2] = (time.mktime(time.strptime(one_stock_from_2015[m-1][2][0:-6],'%Y-%m-%d'))-time.mktime(time.strptime('2014-01-01','%Y-%m-%d')))/(24*3600)
+					stock_data_from_sql[i + j * len(stock_number)][3] = 0
+					stock_data_from_sql[i + j * len(stock_number)][4] = one_day_data[2].mean()#买入价
+
+					stock_data_from_sql[i + j * len(stock_number)][5] = (one_stock_from_2015[m+1][0]+one_stock_from_2015[m+1][1]+one_stock_from_2015[m+1][3]+one_stock_from_2015[m+1][4])/4.0#卖出价
+
+					stock_data_from_sql[i + j * len(stock_number)][6] = (stock_data_from_sql[i + j * len(stock_number)][1] + 0.00001) / (stock_data_from_sql[i + j * len(stock_number)][0] + 0.00001)  # g1+
+
+					stock_data_from_sql[i + j * len(stock_number)][8] = (stock_data_from_sql[i + j * len(stock_number)][5] + 0.00001) / (stock_data_from_sql[i + j * len(stock_number)][4] + 0.00001)  # g2
+
+					base_info_stock_gg[i][j*3]=stock_data_from_sql[i + j * len(stock_number)][2]
+					base_info_stock_gg[i][j * 3+1] = stock_data_from_sql[i + j * len(stock_number)][6]
+					base_info_stock_gg[i][j * 3+2] = stock_data_from_sql[i + j * len(stock_number)][8]
+
+	with open("/root/PycharmProjects/untitled/base_info_stock_gg_1808282148.csv", "w") as csvfile:
 		writer = csv.writer(csvfile)
-		for t in range(len(stock_data_from_sql)):
-			writer.writerow(stock_data_from_sql[t][:])
+		for t in range(len(base_info_stock_gg)):
+			writer.writerow(base_info_stock_gg[t][:])
 
 
 	# 	for j in range(1,len(date_from_sql)):
@@ -261,8 +270,8 @@ def back_test_for_test(g1plus,g2,trade_fee):
 
 
 
-back_test_for_test(1.05,1.005,0.003)
-
+# back_test_for_test(1.05,1.005,0.003)
+get_sql_data(1.06,0.85,1.005)
 
 print  'OK'
 

@@ -8,7 +8,7 @@ import time
 用于将每个月的每只股票的tick数据转变成标准格式的分钟数据，一天一个表格
 """
 def get_times():
-    filename = '/HOME/stockdata/sh201401d/sh_20140102/600000_20140102.csv'
+    filename = '/root/PycharmProjects/stock_pairs/data2/sh201401d/sh_20140102/600000_20140102.csv'
     with open(filename) as f:
         reader = csv.reader(f)
         header_row = next(reader)
@@ -136,12 +136,9 @@ def get_day_prices_one_file(times,filename):
         if day_prices[i] == 0.0 :
             day_prices[i] = day_prices[i+1]
 
-    day_prices = np.append(day_prices,filename[38:44])
+    day_prices = np.append(day_prices,filename[-19:-13])
 
     return day_prices
-
-
-
 
 
 
@@ -156,7 +153,7 @@ def get_file_name(file_dir):
 def get_day_price_one_day(filedir):
     times = get_times()
     files = get_file_name(filedir)
-    with open(filedir[26:37] + "_minute_data.csv", "w") as csvfile:
+    with open(filedir[-11:] + "_minute_data.csv", "w") as csvfile:
         writer = csv.writer(csvfile)
         for file in files:
             writer.writerow(get_day_prices_one_file(times, file))
@@ -166,12 +163,13 @@ def caculate_day_prices(filedirs):
         get_day_price_one_day(filedirs[i])
 
 t1 = time.time()
-filedirs = os.listdir('/HOME/stockdata/sh201510d')
+filedirs = os.listdir('/root/PycharmProjects/stock_pairs/data2/sh201511d')
 for i in range(0, len(filedirs)):
-    filedirs[i] = '/HOME/stockdata/sh201510d/' + filedirs[i]
+    filedirs[i] = '/root/PycharmProjects/stock_pairs/data2/sh201511d/' + filedirs[i]
 
 if  __name__ == "__main__":
     pool = Pool(processes=4)
+
     pool.map(caculate_day_prices,[filedirs[0:4],filedirs[4:8],filedirs[8:12],filedirs[12:len(filedirs)]])
 
 #caculate_day_prices(filedirs[12:len(filedirs)])
